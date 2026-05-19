@@ -1,10 +1,13 @@
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import HomePage from './pages/HomePage'
 import RequesterPage from './pages/RequesterPage'
 import ContributorPage from './pages/ContributorPage'
 import ReviewerPage from './pages/ReviewerPage'
+import AgentsPage from './pages/AgentsPage'
+import { AlgoTrainProvider, useAlgoTrain } from './context/AlgoTrainContext'
+import { formatAddress } from './lib/algorand'
 import './styles/app.css'
 
 const navItems = [
@@ -12,34 +15,25 @@ const navItems = [
   { to: '/requester', label: 'Requester' },
   { to: '/contributor', label: 'Contributor' },
   { to: '/reviewer', label: 'Reviewer' },
+  { to: '/agents', label: 'x402 / Agents' },
 ]
 
-export default function App() {
+function AppShell() {
   const location = useLocation()
-  const [accounts, setAccounts] = useState([])
-  const [network] = useState(import.meta.env.VITE_ALGOD_NETWORK || 'testnet')
   const [theme, setTheme] = useState('dark')
-  const [status, setStatus] = useState('Disconnected')
-
-  // placeholder until we wire real Pera
-  const activeAccount = useMemo(() => accounts?.[0] || '', [accounts])
+  const {
+    activeAccount,
+    network,
+    status,
+    busy,
+    busyAction,
+    connect,
+    disconnect,
+  } = useAlgoTrain()
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
-
-  function handleConnect() {
-    // fake address just so the UI reacts;
-    // we can replace with real Pera later.
-    const fake = 'TESTACCOUNT1234567890TESTACCOUNT'
-    setAccounts([fake])
-    setStatus('Wallet connected (placeholder)')
-  }
-
-  function handleDisconnect() {
-    setAccounts([])
-    setStatus('Disconnected')
-  }
 
   return (
     <div className="app-shell premium-shell">
@@ -79,16 +73,12 @@ export default function App() {
           </div>
         </div>
 
-        <nav
-          className="top-nav top-nav-premium"
-          aria-label="Primary navigation"
-        >
+        <nav className="top-nav top-nav-premium" aria-label="Primary navigation">
           {navItems.map((item) => {
             const isActive =
               item.to === '/'
                 ? location.pathname === '/'
                 : location.pathname.startsWith(item.to)
-
             return (
               <Link
                 key={item.to}
@@ -112,9 +102,7 @@ export default function App() {
 
           <button
             className="theme-toggle"
-            onClick={() =>
-              setTheme(theme === 'dark' ? 'light' : 'dark')
-            }
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? 'Light' : 'Dark'}
@@ -127,14 +115,12 @@ export default function App() {
                 title={activeAccount}
               >
                 <span className="wallet-pill-label">Pera</span>
-                <span>
-                  {activeAccount.slice(0, 6)}...
-                  {activeAccount.slice(-4)}
-                </span>
+                <span>{formatAddress(activeAccount)}</span>
               </div>
               <button
                 className="ghost-button"
-                onClick={handleDisconnect}
+                onClick={disconnect}
+                disabled={busy}
               >
                 Disconnect
               </button>
@@ -142,18 +128,16 @@ export default function App() {
           ) : (
             <button
               className="primary-button"
-              onClick={handleConnect}
+              onClick={connect}
+              disabled={busy}
             >
-              Connect Pera
+              {busyAction === 'connect' ? 'Connecting…' : 'Connect Pera'}
             </button>
           )}
         </div>
       </header>
 
-      <section
-        className="status-ribbon"
-        aria-label="Application status"
-      >
+      <section className="status-ribbon" aria-label="Application status">
         <div className="status-ribbon-inner">
           <span className="status-kicker">Live POC status</span>
           <span className="status-message">{status}</span>
@@ -161,51 +145,18 @@ export default function App() {
             •
           </span>
           <span className="status-meta">
-            Stable-style ASA rewards · Wallet-signed payout proof ·
-            TestNet flow
+            Submit → Review → On-chain payout · TestNet
           </span>
         </div>
       </section>
 
       <main id="content" className="main-shell">
         <Routes>
-          <Route
-            path="/"
-            element={
-              <HomePage
-                activeAccount={activeAccount}
-                network={network}
-                status={status}
-              />
-            }
-          />
-          <Route
-            path="/requester"
-            element={
-              <RequesterPage
-                activeAccount={activeAccount}
-                network={network}
-              />
-            }
-          />
-          <Route
-            path="/contributor"
-            element={
-              <ContributorPage
-                activeAccount={activeAccount}
-                network={network}
-              />
-            }
-          />
-          <Route
-            path="/reviewer"
-            element={
-              <ReviewerPage
-                activeAccount={activeAccount}
-                network={network}
-              />
-            }
-          />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/requester" element={<RequesterPage />} />
+          <Route path="/contributor" element={<ContributorPage />} />
+          <Route path="/reviewer" element={<ReviewerPage />} />
+          <Route path="/agents" element={<AgentsPage />} />
         </Routes>
       </main>
 
@@ -214,13 +165,20 @@ export default function App() {
           <p>Built for the Algorand Foundation competition</p>
           <p className="footer-muted">Founder: Sandra Cai</p>
         </div>
-
         <div className="footer-proof">
-          <span>Wallet flow: Pera (placeholder)</span>
-          <span>Settlement: Algorand TestNet</span>
-          <span>Reward model: ASA-based payouts</span>
+          <span>Wallet: Pera · TestNet</span>
+          <span>Settlement: algosdk + Algonode</span>
+          <span>Roadmap: x402 agent payments</span>
         </div>
       </footer>
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <AlgoTrainProvider>
+      <AppShell />
+    </AlgoTrainProvider>
   )
 }
