@@ -23,6 +23,7 @@ VITE_ARC_PAYOUT_TOKEN=   # leave empty: native USDC payouts
 VITE_DYNAMIC_ENV_ID=     # from app.dynamic.xyz (add Arc as custom EVM network)
 VITE_WORLD_APP_ID=       # from developer.worldcoin.org (app_...)
 VITE_WORLD_ACTION=label-data  # incognito action name in the World dev portal
+VITE_AGENT_PRIVATE_KEY=  # TESTNET-ONLY key for the autonomous agent wallet
 ```
 
 ## Wiring (3 edits)
@@ -42,6 +43,9 @@ VITE_WORLD_ACTION=label-data  # incognito action name in the World dev portal
   memo preserved on-chain in calldata for the audit trail.
 - Dynamic ("upgrade an existing app's wallets"): embedded-wallet onboarding
   for non-crypto contributors; payout address sourced from Dynamic.
+- Dynamic agent track ($2k, "give your AI agent a wallet"): autonomous
+  reviewer agent with its own Arc wallet — policy-evaluates submissions and
+  pays USDC with no human in the loop (`src/lib/agentPayer.js`, Agents page).
 - World (third SDK): World ID proof-of-personhood gate on the Contributor
   page — sybil-resistant labeling pool, "verified human" badge flows through
   to the Reviewer's approval view (`src/lib/worldId.jsx`).

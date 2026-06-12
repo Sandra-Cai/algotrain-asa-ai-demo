@@ -1,14 +1,77 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ALGORAND_RESOURCES,
   DEV_PORTAL_AI_PROMPTS,
 } from '../lib/resources'
+import { useAlgoTrain } from '../context/AlgoTrainContext'
+import ExplorerLink from '../components/ExplorerLink'
 
 export default function AgentsPage() {
+  const { runAgentReviewer, agentConfigured, busyAction, submissions } =
+    useAlgoTrain()
+  const [results, setResults] = useState([])
+  const [error, setError] = useState('')
+  const pendingCount = submissions.filter((s) => s.status === 'pending').length
+
+  async function handleAgentRun() {
+    setError('')
+    try {
+      const run = await runAgentReviewer()
+      setResults(run)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   return (
     <section className="page-shell content-section">
       <p className="eyebrow">Phase 2 · Agentic commerce</p>
       <h2>x402 & AI agents on Arc</h2>
+
+      <div className="card-panel demo-highlight">
+        <h3>Live demo · Agent reviewer with its own wallet</h3>
+        <p className="muted">
+          The agent holds its own Arc wallet, reviews pending submissions
+          against an explainable quality policy, and pays approved work in
+          USDC autonomously. Every decision lands in the audit log.
+        </p>
+        <div className="inline-actions">
+          <button
+            type="button"
+            className="primary-button"
+            disabled={!agentConfigured || busyAction === 'agent-run'}
+            onClick={handleAgentRun}
+          >
+            {busyAction === 'agent-run'
+              ? 'Agent reviewing…'
+              : `Run agent on ${pendingCount} pending submission${pendingCount === 1 ? '' : 's'}`}
+          </button>
+        </div>
+        {!agentConfigured && (
+          <p className="muted" style={{ marginTop: '8px' }}>
+            Set VITE_AGENT_PRIVATE_KEY (testnet) and fund the agent wallet
+            with Arc testnet USDC to enable.
+          </p>
+        )}
+        {error && <p className="form-error">{error}</p>}
+        {results.length > 0 && (
+          <ul className="card-list" style={{ marginTop: '12px' }}>
+            {results.map((r) => (
+              <li key={r.submissionId} className="task-meta">
+                <span className="badge badge-muted">{r.decision}</span>{' '}
+                score {r.score ?? 0}/100 · {r.reasons?.join('; ')}
+                {r.txId && (
+                  <>
+                    {' · '}
+                    <ExplorerLink txId={r.txId} label="tx ↗" />
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <p className="lead">
         Today AlgoTrain settles human data work in USDC on Arc. Next,
         the same settlement layer plugs into{' '}

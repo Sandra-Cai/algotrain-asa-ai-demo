@@ -17,6 +17,7 @@ import {
   DEFAULT_REWARD_AMOUNT,
 } from '../lib/chains/arc'
 import { settlePayout } from '../lib/payouts'
+import { agentConfigured, agentProcessSubmission } from '../lib/agentPayer'
 import {
   addSubmission,
   appendAudit,
@@ -191,6 +192,63 @@ export function AlgoTrainProvider({ children }) {
     [activeAccount, getWalletClient, store.submissions, store.tasks],
   )
 
+  const runAgentReviewer = useCallback(async () => {
+    if (!agentConfigured) {
+      throw new Error('Set VITE_AGENT_PRIVATE_KEY (testnet) to enable the agent')
+    }
+    const pending = store.submissions.filter((sub) => sub.status === 'pending')
+    if (pending.length === 0) throw new Error('No pending submissions to process')
+
+    setBusyAction('agent-run')
+    setStatus(`Agent reviewing ${pending.length} submission(s)…`)
+    const results = []
+    try {
+      for (const submission of pending) {
+        const task = store.tasks.find((t) => t.id === submission.taskId)
+        if (!task) continue
+        try {
+          const outcome = await agentProcessSubmission({ submission, task })
+          if (outcome.decision === 'paid') {
+            updateSubmission(submission.id, {
+              status: 'approved',
+              reviewedAt: new Date().toISOString(),
+              reviewerAddress: outcome.agentAddress,
+              reviewedByAgent: true,
+              txId: outcome.txId,
+              paidAt: new Date().toISOString(),
+            })
+            appendAudit(
+              'Agent paid submission',
+              `Score ${outcome.score}/100 (${outcome.reasons.join('; ')}). Tx: ${outcome.txId}`,
+            )
+          } else {
+            updateSubmission(submission.id, {
+              status: 'rejected',
+              reviewedAt: new Date().toISOString(),
+              reviewedByAgent: true,
+            })
+            appendAudit(
+              'Agent rejected submission',
+              `Score ${outcome.score}/100 (${outcome.reasons.join('; ')}). No payment.`,
+            )
+          }
+          results.push({ submissionId: submission.id, ...outcome })
+        } catch (err) {
+          results.push({
+            submissionId: submission.id,
+            decision: 'error',
+            reasons: [err?.message || 'Agent payout failed'],
+          })
+        }
+      }
+      const paid = results.filter((r) => r.decision === 'paid').length
+      setStatus(`Agent run complete — ${paid}/${results.length} paid autonomously`)
+      return results
+    } finally {
+      setBusyAction('')
+    }
+  }, [store.submissions, store.tasks])
+
   const rejectSubmission = useCallback(
     (submissionId) => {
       updateSubmission(submissionId, {
@@ -226,6 +284,8 @@ export function AlgoTrainProvider({ children }) {
       approveSubmission,
       triggerPayout,
       rejectSubmission,
+      runAgentReviewer,
+      agentConfigured,
       resetDemo: handleResetDemo,
       tasks: store.tasks,
       submissions: store.submissions,
@@ -250,6 +310,7 @@ export function AlgoTrainProvider({ children }) {
       approveSubmission,
       triggerPayout,
       rejectSubmission,
+      runAgentReviewer,
       handleResetDemo,
       store.tasks,
       store.submissions,
