@@ -24,7 +24,8 @@ Open http://localhost:5173 — sign in via **Dynamic** (email or wallet).
 | `src/lib/chains/arc.js` | viem clients, USDC payout txn, explorer URLs |
 | `src/lib/payouts.js` | Rails registry — `settlePayout({ rail: 'arc', ... })` |
 | `src/lib/dynamicWallet.jsx` | DynamicProvider (Arc network override) + re-exports |
-| `src/lib/worldId.jsx` + `worldIdConfig.js` | World ID human-verification gate |
+| `src/lib/worldId.jsx` + `worldIdConfig.js` | World ID gate (disabled — SDK cap) |
+| `src/lib/chains/hedera.js` | Hedera rail: CryptoTransfer, HCS log, Schedule Service |
 | `src/lib/store.js` | localStorage tasks/submissions/audit |
 | `docs/ETHGLOBAL_NY_2026.md` | Bounty mapping, env vars, demo script |
 

@@ -4,18 +4,31 @@
 
 import {
   sendArcPayout,
-  explorerTxUrl,
-  formatReward,
+  explorerTxUrl as arcExplorerTxUrl,
+  formatReward as arcFormatReward,
   isValidEvmAddress,
 } from './chains/arc'
+import {
+  sendHederaPayout,
+  explorerTxUrl as hederaExplorerTxUrl,
+  formatReward as hederaFormatReward,
+  isValidHederaReceiver,
+} from './chains/hedera'
 
 const rails = {
   arc: {
     label: 'Arc · native USDC',
     validateAddress: isValidEvmAddress,
-    explorerTxUrl,
-    formatReward,
+    explorerTxUrl: arcExplorerTxUrl,
+    formatReward: arcFormatReward,
     settle: sendArcPayout,
+  },
+  hedera: {
+    label: 'Hedera · HBAR (native services)',
+    validateAddress: isValidHederaReceiver,
+    explorerTxUrl: hederaExplorerTxUrl,
+    formatReward: hederaFormatReward,
+    settle: sendHederaPayout,
   },
 }
 

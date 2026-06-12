@@ -23,7 +23,11 @@ VITE_ARC_PAYOUT_TOKEN=   # leave empty: native USDC payouts
 VITE_DYNAMIC_ENV_ID=     # from app.dynamic.xyz (add Arc as custom EVM network)
 VITE_WORLD_APP_ID=       # from developer.worldcoin.org (app_...)
 VITE_WORLD_ACTION=label-data  # incognito action name in the World dev portal
-VITE_AGENT_PRIVATE_KEY=  # TESTNET-ONLY key for the autonomous agent wallet
+VITE_AGENT_PRIVATE_KEY=  # TESTNET-ONLY key for the agent's Arc fallback rail
+VITE_HEDERA_ACCOUNT_ID=  # 0.0.x testnet operator (portal.hedera.com)
+VITE_HEDERA_PRIVATE_KEY= # TESTNET-ONLY ECDSA key for the agent's Hedera rail
+VITE_HEDERA_TOPIC_ID=    # optional HCS topic for the agent decision log
+VITE_AGENT_RAIL=         # optional override: hedera | arc
 ```
 
 ## Wiring (3 edits)
@@ -37,18 +41,44 @@ VITE_AGENT_PRIVATE_KEY=  # TESTNET-ONLY key for the autonomous agent wallet
    stored rail and call `settlePayout` from `src/lib/payouts.js`. Keep the
    existing approve/pay split (per AGENTS.md). Keep `signed[0]` from Pera.
 
-## Bounty mapping (3 sponsor SDKs max — we use 2, ENS optional 3rd)
+## SDK cap decision (3 sponsor SDKs max)
+
+Active stack: Circle/Arc + Dynamic + Hedera. World ID code remains in the
+repo but stays DISABLED (leave VITE_WORLD_APP_ID unset) to respect the cap.
+To run World instead of Hedera, set VITE_WORLD_APP_ID and leave the Hedera
+vars unset. Never enable all four for the judged submission.
+
+## Bounty mapping
 
 - Circle / Arc: USDC settlement rail for AI data-labeling payouts; payout
   memo preserved on-chain in calldata for the audit trail.
 - Dynamic ("upgrade an existing app's wallets"): embedded-wallet onboarding
   for non-crypto contributors; payout address sourced from Dynamic.
+- Hedera AI & Agentic Payments ($6k, $3k x 2): the autonomous agent moves
+  HBAR via native CryptoTransfer with first-class transaction memos
+  (`src/lib/chains/hedera.js`); decisions logged to HCS; Schedule Service
+  helper included for the automation track. No Solidity anywhere.
 - Dynamic agent track ($2k, "give your AI agent a wallet"): autonomous
   reviewer agent with its own Arc wallet — policy-evaluates submissions and
   pays USDC with no human in the loop (`src/lib/agentPayer.js`, Agents page).
 - World (third SDK): World ID proof-of-personhood gate on the Contributor
   page — sybil-resistant labeling pool, "verified human" badge flows through
   to the Reviewer's approval view (`src/lib/worldId.jsx`).
+
+## Hedera workshop tooling (run on your laptop, from the slides)
+
+```bash
+# Hedera Docs MCP for Claude Code (terminal, not inside Claude Code):
+claude mcp add --transport http hedera-docs https://docs.hedera.com/mcp
+claude mcp list   # verify
+
+# Hedera Skills plugin (inside Claude Code):
+/plugin marketplace add hedera-dev/hedera-skills
+/plugin
+/reload-plugins
+```
+Repo: github.com/hedera-dev/hedera-skills · docs.hedera.com (MCP rate limit
+200 req/hr/IP).
 
 ## Demo script (90 seconds)
 

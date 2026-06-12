@@ -12,10 +12,20 @@
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { arcChain } from './chains/arc'
+import { hederaConfigured, logDecisionToHCS, getHederaOperatorId } from './chains/hedera'
 import { settlePayout } from './payouts'
 
+// Agent rail: Hedera when configured (targets the AI & Agentic Payments
+// track — the agent moves value autonomously via native CryptoTransfer),
+// otherwise falls back to Arc with the local viem key.
+const AGENT_RAIL = import.meta.env.VITE_AGENT_RAIL ||
+  (hederaConfigured ? 'hedera' : 'arc')
+
 const AGENT_KEY = import.meta.env.VITE_AGENT_PRIVATE_KEY || ''
-export const agentConfigured = /^0x[a-fA-F0-9]{64}$/.test(AGENT_KEY)
+const arcAgentConfigured = /^0x[a-fA-F0-9]{64}$/.test(AGENT_KEY)
+export const agentConfigured =
+  AGENT_RAIL === 'hedera' ? hederaConfigured : arcAgentConfigured
+export const agentRail = AGENT_RAIL
 
 export function getAgentAccount() {
   if (!agentConfigured) throw new Error('Set VITE_AGENT_PRIVATE_KEY (testnet key)')
@@ -87,11 +97,19 @@ export async function agentProcessSubmission({ submission, task }) {
     return { decision: 'rejected', ...verdict }
   }
 
-  const walletClient = getAgentWalletClient()
-  const agentAddress = walletClient.account.address
   const noteText = `AlgoTrain agent payout | ${task.id.slice(0, 8)} | ${submission.id.slice(0, 8)}`
 
+  let walletClient = null
+  let agentAddress
+  if (AGENT_RAIL === 'hedera') {
+    agentAddress = getHederaOperatorId()
+  } else {
+    walletClient = getAgentWalletClient()
+    agentAddress = walletClient.account.address
+  }
+
   const { txId, explorerUrl } = await settlePayout({
+    rail: AGENT_RAIL,
     walletClient,
     sender: agentAddress,
     receiver: submission.contributorAddress,
@@ -99,5 +117,23 @@ export async function agentProcessSubmission({ submission, task }) {
     noteText,
   })
 
-  return { decision: 'paid', ...verdict, txId, explorerUrl, agentAddress }
+  // Immutable public audit trail of the agent's decision (no-op if no topic).
+  const hcsTxId = await logDecisionToHCS({
+    submission: submission.id,
+    task: task.id,
+    decision: 'paid',
+    score: verdict.score,
+    reasons: verdict.reasons,
+    txId,
+  }).catch(() => null)
+
+  return {
+    decision: 'paid',
+    ...verdict,
+    txId,
+    explorerUrl,
+    agentAddress,
+    rail: AGENT_RAIL,
+    hcsTxId,
+  }
 }

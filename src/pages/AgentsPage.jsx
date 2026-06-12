@@ -32,9 +32,11 @@ export default function AgentsPage() {
       <div className="card-panel demo-highlight">
         <h3>Live demo · Agent reviewer with its own wallet</h3>
         <p className="muted">
-          The agent holds its own Arc wallet, reviews pending submissions
-          against an explainable quality policy, and pays approved work in
-          USDC autonomously. Every decision lands in the audit log.
+          The agent holds its own wallet, reviews pending submissions against
+          an explainable quality policy, and pays approved work autonomously —
+          HBAR via Hedera native CryptoTransfer (with the audit memo on the
+          transaction itself), or USDC on Arc. Decisions are also logged to
+          Hedera Consensus Service for a public, immutable audit trail.
         </p>
         <div className="inline-actions">
           <button
@@ -50,8 +52,9 @@ export default function AgentsPage() {
         </div>
         {!agentConfigured && (
           <p className="muted" style={{ marginTop: '8px' }}>
-            Set VITE_AGENT_PRIVATE_KEY (testnet) and fund the agent wallet
-            with Arc testnet USDC to enable.
+            Set VITE_HEDERA_ACCOUNT_ID + VITE_HEDERA_PRIVATE_KEY (Hedera rail)
+            or VITE_AGENT_PRIVATE_KEY (Arc rail), testnet only, and fund the
+            agent account.
           </p>
         )}
         {error && <p className="form-error">{error}</p>}
@@ -59,7 +62,8 @@ export default function AgentsPage() {
           <ul className="card-list" style={{ marginTop: '12px' }}>
             {results.map((r) => (
               <li key={r.submissionId} className="task-meta">
-                <span className="badge badge-muted">{r.decision}</span>{' '}
+                <span className="badge badge-muted">{r.decision}</span>
+                {r.rail ? ` ${r.rail} · ` : ' '}
                 score {r.score ?? 0}/100 · {r.reasons?.join('; ')}
                 {r.txId && (
                   <>
