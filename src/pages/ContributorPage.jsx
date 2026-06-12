@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useAlgoTrain } from '../context/AlgoTrainContext'
 import FlowSteps from '../components/FlowSteps'
 import ExplorerLink from '../components/ExplorerLink'
-import { formatAddress } from '../lib/algorand'
+import { formatAddress } from '../lib/chains/arc'
+import { DynamicWidget } from '../lib/dynamicWallet'
 import { DEMO_TASK_ID, defaultSubmissionText } from '../lib/demoData'
 
 export default function ContributorPage() {
@@ -10,14 +11,11 @@ export default function ContributorPage() {
     activeAccount,
     network,
     busy,
-    busyAction,
     tasks,
     submissions,
     payoutAddress,
     submitData,
     recordPayoutWallet,
-    optInToRewardAsset,
-    rewardAssetId,
     formatReward,
   } = useAlgoTrain()
 
@@ -27,7 +25,6 @@ export default function ContributorPage() {
   )
   const [content, setContent] = useState(defaultSubmissionText)
   const [error, setError] = useState('')
-  const [optInTx, setOptInTx] = useState(null)
 
   const mySubmissions = submissions.filter(
     (s) =>
@@ -45,16 +42,6 @@ export default function ContributorPage() {
     }
   }
 
-  async function handleOptIn() {
-    setError('')
-    try {
-      const txId = await optInToRewardAsset()
-      if (txId) setOptInTx(txId)
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
   const payoutReady = Boolean(payoutAddress || activeAccount)
 
   return (
@@ -62,29 +49,28 @@ export default function ContributorPage() {
       <p className="eyebrow">Stage 1 · Data submission</p>
       <h2>Contributor workspace</h2>
       <p className="lead">
-        Record your payout wallet, submit labeled data for the guided demo task,
-        then wait for reviewer approval and on-chain payment.
+        Sign in with email or a wallet — Dynamic creates an embedded wallet if
+        you don&apos;t have one. Submit labeled data, get paid in USDC on Arc.
       </p>
 
       <FlowSteps current="submit" />
 
-      {!activeAccount && (
-        <p className="callout callout-warn">
-          Connect Pera Wallet on TestNet to participate.
+      <div className="card-panel">
+        <h3>Your wallet</h3>
+        <p className="muted">
+          No seed phrases, no extensions required. Email sign-in gives you a
+          real onchain wallet that receives your USDC rewards.
         </p>
-      )}
+        <DynamicWidget />
+      </div>
 
       {demoTask && (
         <article className="card-panel task-card demo-highlight">
           <span className="badge">Guided demo task</span>
           <h3>{demoTask.title}</h3>
           <p className="muted">{demoTask.description}</p>
-          {demoTask.sample && (
-            <p className="sample-box">{demoTask.sample}</p>
-          )}
-          <p className="task-meta">
-            Reward: {formatReward(demoTask.rewardAmount, demoTask.rewardAssetId)}
-          </p>
+          {demoTask.sample && <p className="sample-box">{demoTask.sample}</p>}
+          <p className="task-meta">Reward: {formatReward(demoTask.rewardAmount)}</p>
         </article>
       )}
 
@@ -97,7 +83,7 @@ export default function ContributorPage() {
             value={
               payoutAddress
                 ? `${payoutAddress} (${formatAddress(payoutAddress)})`
-                : 'Click “Use connected wallet” below'
+                : 'Click “Use my wallet” below'
             }
           />
           <div className="inline-actions">
@@ -113,7 +99,7 @@ export default function ContributorPage() {
                 }
               }}
             >
-              Use connected wallet
+              Use my wallet
             </button>
           </div>
         </div>
@@ -128,7 +114,7 @@ export default function ContributorPage() {
           >
             {tasks.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.title} — {formatReward(t.rewardAmount, t.rewardAssetId)}
+                {t.title} — {formatReward(t.rewardAmount)}
               </option>
             ))}
           </select>
@@ -156,35 +142,19 @@ export default function ContributorPage() {
         </button>
       </form>
 
-      {rewardAssetId && (
-        <aside className="card-panel">
-          <h3>Optional ASA opt-in</h3>
-          <p className="muted">
-            For the live pitch, use ALGO payout on the Reviewer page. Opt in here
-            only if you configured a TestNet ASA.
-          </p>
-          <button
-            type="button"
-            className="ghost-button"
-            onClick={handleOptIn}
-            disabled={!activeAccount || busyAction === 'opt-in'}
-          >
-            {busyAction === 'opt-in' ? 'Signing opt-in…' : 'Opt in to ASA'}
-          </button>
-          {optInTx && <ExplorerLink txId={optInTx} />}
-        </aside>
-      )}
-
       {mySubmissions.length > 0 && (
         <div className="card-list">
           <h3>Your submissions</h3>
           {mySubmissions.map((s) => (
             <article key={s.id} className="card-panel task-card">
-              <p className="badge badge-muted">{s.status}{s.txId ? ' · paid' : ''}</p>
+              <p className="badge badge-muted">
+                {s.status}
+                {s.txId ? ' · paid' : ''}
+              </p>
               <p>{s.content}</p>
               {s.txId && (
                 <p className="proof-line">
-                  Payout: <ExplorerLink txId={s.txId} label="Open on Lora ↗" />
+                  Payout: <ExplorerLink txId={s.txId} label="Open on Arc explorer ↗" />
                 </p>
               )}
             </article>

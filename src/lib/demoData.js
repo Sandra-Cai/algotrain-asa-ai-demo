@@ -9,7 +9,7 @@ export const defaultDemoTask = {
     'Image batch #NYC-042: handbag, studio lighting, neutral background.',
   rewardAsaUnits: 1,
   rewardAmount: Number(import.meta.env.VITE_REWARD_AMOUNT || 10_000),
-  rewardAssetId: Number(import.meta.env.VITE_REWARD_ASA_ID || 0) || null,
+  
   requesterAddress: '',
   createdAt: new Date().toISOString(),
 }

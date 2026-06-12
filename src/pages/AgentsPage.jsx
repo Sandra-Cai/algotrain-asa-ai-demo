@@ -8,9 +8,9 @@ export default function AgentsPage() {
   return (
     <section className="page-shell content-section">
       <p className="eyebrow">Phase 2 · Agentic commerce</p>
-      <h2>x402 & AI agents on Algorand</h2>
+      <h2>x402 & AI agents on Arc</h2>
       <p className="lead">
-        Today AlgoTrain settles human data work with Pera-signed payouts. Next,
+        Today AlgoTrain settles human data work in USDC on Arc. Next,
         the same settlement layer plugs into{' '}
         <strong>x402</strong> — HTTP 402 micropayments so AI agents can pay per
         API call without accounts or subscriptions.
@@ -19,7 +19,7 @@ export default function AgentsPage() {
       <div className="card-panel x402-flow">
         <h3>How x402 extends AlgoTrain</h3>
         <pre className="flow-diagram" aria-label="x402 flow diagram">
-{`  AI Agent                    AlgoTrain API              Algorand
+{`  AI Agent                    AlgoTrain API              Arc
       │                              │                        │
       │  GET /data/task-001          │                        │
       │ ───────────────────────────► │                        │
@@ -31,7 +31,7 @@ export default function AgentsPage() {
       │                              │                        │`}
         </pre>
         <p className="muted">
-          Built on Coinbase&apos;s open x402 standard; Algorand AVM support via{' '}
+          Built on Coinbase&apos;s open x402 standard; USDC-native settlement via{' '}
           <code>@x402-avm/*</code> packages and Foundation tutorials.
         </p>
       </div>

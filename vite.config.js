@@ -12,11 +12,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['buffer', 'algosdk'],
-    esbuildOptions: {
-      define: {
-        global: 'globalThis',
-      },
-    },
+    include: ['buffer'],
   },
 })

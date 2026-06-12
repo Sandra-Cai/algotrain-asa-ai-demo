@@ -7,7 +7,7 @@ import ContributorPage from './pages/ContributorPage'
 import ReviewerPage from './pages/ReviewerPage'
 import AgentsPage from './pages/AgentsPage'
 import { AlgoTrainProvider, useAlgoTrain } from './context/AlgoTrainContext'
-import { formatAddress } from './lib/algorand'
+import { formatAddress } from './lib/chains/arc'
 import './styles/app.css'
 
 const navItems = [
@@ -68,7 +68,7 @@ function AppShell() {
           <div className="brand-copy">
             <h1>AlgoTrain</h1>
             <p className="brand-subtitle">
-              Algorand-native AI data payout rails
+              Stablecoin-native AI data payout rails
             </p>
           </div>
         </div>
@@ -97,7 +97,7 @@ function AppShell() {
             title={`Connected environment: ${network}`}
           >
             <span className="network-dot" aria-hidden="true" />
-            <span>Algorand {network}</span>
+            <span>Arc {network}</span>
           </div>
 
           <button
@@ -114,7 +114,7 @@ function AppShell() {
                 className="wallet-pill wallet-pill-live"
                 title={activeAccount}
               >
-                <span className="wallet-pill-label">Pera</span>
+                <span className="wallet-pill-label">Dynamic</span>
                 <span>{formatAddress(activeAccount)}</span>
               </div>
               <button
@@ -131,7 +131,7 @@ function AppShell() {
               onClick={connect}
               disabled={busy}
             >
-              {busyAction === 'connect' ? 'Connecting…' : 'Connect Pera'}
+              {busyAction === 'connect' ? 'Connecting…' : 'Sign in'}
             </button>
           )}
         </div>
@@ -162,11 +162,11 @@ function AppShell() {
 
       <footer className="site-footer premium-footer">
         <div>
-          <p>Built for the Algorand Foundation competition</p>
+          <p>Built for ETHGlobal New York 2026 · Continuity Track</p>
           <p className="footer-muted">Founder: Sandra Cai</p>
         </div>
         <div className="footer-proof">
-          <span>Wallet: Pera · TestNet</span>
+          <span>Wallet: Dynamic · Arc Testnet</span>
           <span>Settlement: algosdk + Algonode</span>
           <span>Roadmap: x402 agent payments</span>
         </div>

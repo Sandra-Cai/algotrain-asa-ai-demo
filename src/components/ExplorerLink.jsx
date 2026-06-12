@@ -1,6 +1,6 @@
-import { explorerTxUrl } from '../lib/algorand'
+import { explorerTxUrl } from '../lib/chains/arc'
 
-export default function ExplorerLink({ txId, label = 'View on explorer' }) {
+export default function ExplorerLink({ txId, label = 'View on Arc explorer' }) {
   if (!txId) return null
   return (
     <a

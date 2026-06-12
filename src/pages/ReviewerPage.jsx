@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAlgoTrain } from '../context/AlgoTrainContext'
 import FlowSteps from '../components/FlowSteps'
 import ExplorerLink from '../components/ExplorerLink'
-import { formatAddress } from '../lib/algorand'
+import { formatAddress } from '../lib/chains/arc'
 
 export default function ReviewerPage() {
   const {
@@ -16,7 +16,6 @@ export default function ReviewerPage() {
     triggerPayout,
     rejectSubmission,
     formatReward,
-    rewardAssetId,
   } = useAlgoTrain()
 
   const [error, setError] = useState('')
@@ -41,20 +40,10 @@ export default function ReviewerPage() {
     }
   }
 
-  async function handleAlgoPayout(id) {
+  async function handlePayout(id) {
     setError('')
     try {
-      const txId = await triggerPayout(id, { useAsa: false })
-      setLastTxId(txId)
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
-  async function handleAsaPayout(id) {
-    setError('')
-    try {
-      const txId = await triggerPayout(id, { useAsa: true })
+      const txId = await triggerPayout(id)
       setLastTxId(txId)
     } catch (err) {
       setError(err.message)
@@ -75,29 +64,30 @@ export default function ReviewerPage() {
       <p className="eyebrow">Stages 2–3 · Review & payment</p>
       <h2>Reviewer workspace</h2>
       <p className="lead">
-        First approve the submission, then sign a separate TestNet payout in
-        Pera. This mirrors the exact flow Algorand mentors requested for the
-        competition demo.
+        First approve the submission, then sign a separate USDC payout on Arc.
+        Approval and payment stay split so the audit trail shows two distinct
+        decisions.
       </p>
 
       <FlowSteps current="review" />
 
       {!activeAccount && (
         <p className="callout callout-warn">
-          Connect the <strong>reviewer</strong> wallet here — it signs the payout
-          (needs TestNet ALGO for reward + fees).
+          Sign in as the <strong>reviewer</strong> here — your wallet signs the
+          payout (needs Arc testnet USDC; gas is paid in USDC too).
         </p>
       )}
 
       <p className="callout">
         Pitch tip: use two browsers — contributor submits first, then reviewer
-        approves and pays 0.01 ALGO.
+        approves and pays 0.01 USDC.
       </p>
 
       {error && <p className="form-error">{error}</p>}
       {lastTxId && (
         <p className="callout callout-success">
-          Payout confirmed: <ExplorerLink txId={lastTxId} label="Open on Lora ↗" />
+          Payout confirmed:{' '}
+          <ExplorerLink txId={lastTxId} label="Open on Arc explorer ↗" />
         </p>
       )}
 
@@ -117,9 +107,7 @@ export default function ReviewerPage() {
                   <p className="sample-box">{s.content}</p>
                   <p className="task-meta">
                     Contributor: {formatAddress(s.contributorAddress)} · Reward:{' '}
-                    {task
-                      ? formatReward(task.rewardAmount, task.rewardAssetId)
-                      : '—'}
+                    {task ? formatReward(task.rewardAmount) : '—'}
                   </p>
                   <div className="inline-actions">
                     <button
@@ -148,8 +136,8 @@ export default function ReviewerPage() {
         <aside className="card-panel payout-card">
           <h3>Stage 3 · Payment trigger</h3>
           <p className="muted">
-            After approval, sign the payout below. ALGO is the most reliable path
-            for a live demo.
+            After approval, sign the payout below. Settlement is native USDC on
+            Arc — contributors are paid in dollars, no gas token needed.
           </p>
 
           {approvedUnpaid.length === 0 ? (
@@ -157,36 +145,22 @@ export default function ReviewerPage() {
           ) : (
             approvedUnpaid.map((s) => {
               const task = taskFor(s)
-              const algoLabel = task
-                ? formatReward(task.rewardAmount, null)
-                : 'ALGO'
+              const usdcLabel = task ? formatReward(task.rewardAmount) : 'USDC'
               return (
                 <div key={s.id} className="payout-block">
                   <p className="task-meta">
-                    Pay {formatAddress(s.contributorAddress)} · {algoLabel}
+                    Pay {formatAddress(s.contributorAddress)} · {usdcLabel}
                   </p>
                   <button
                     type="button"
                     className="primary-button"
                     disabled={!activeAccount || busy}
-                    onClick={() => handleAlgoPayout(s.id)}
+                    onClick={() => handlePayout(s.id)}
                   >
-                    {busyAction === 'algo-payout'
-                      ? 'Signing payout in Pera…'
-                      : `Send ${algoLabel}`}
+                    {busyAction === 'usdc-payout'
+                      ? 'Confirm in wallet…'
+                      : `Send ${usdcLabel}`}
                   </button>
-                  {rewardAssetId && (
-                    <button
-                      type="button"
-                      className="ghost-button"
-                      disabled={!activeAccount || busy}
-                      onClick={() => handleAsaPayout(s.id)}
-                    >
-                      {busyAction === 'asa-payout'
-                        ? 'Signing ASA payout…'
-                        : 'Send reward ASA'}
-                    </button>
-                  )}
                 </div>
               )
             })
@@ -201,7 +175,7 @@ export default function ReviewerPage() {
             <article key={s.id} className="card-panel task-card">
               <p className="badge">Paid</p>
               <p className="muted">{s.content}</p>
-              <ExplorerLink txId={s.txId} label="Open on Lora ↗" />
+              <ExplorerLink txId={s.txId} label="Open on Arc explorer ↗" />
             </article>
           ))}
         </div>

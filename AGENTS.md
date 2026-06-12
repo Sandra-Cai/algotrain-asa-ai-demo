@@ -2,44 +2,48 @@
 
 ## Project goal
 
-Algorand-native POC for **AI data contributor payouts**: submit → review → wallet-signed TestNet transaction with Lora proof.
+Stablecoin-native POC for **AI data contributor payouts**: submit → review →
+wallet-signed USDC transaction on **Arc testnet** with explorer proof.
+(Migrated from Algorand for ETHGlobal NY 2026 Continuity Track — the old
+rail lives in `legacy/algorand/` and git history.)
 
 ## Run locally
 
 ```bash
-cd algotrain-asa-ai-demo
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173 — use **Pera on TestNet**.
+Open http://localhost:5173 — sign in via **Dynamic** (email or wallet).
 
 ## Key paths
 
 | Path | Purpose |
 |------|---------|
-| `src/context/AlgoTrainContext.jsx` | Wallet, approve, payout orchestration |
-| `src/lib/algorand.js` | algosdk client, txn build, Lora URLs |
+| `src/context/AlgoTrainContext.jsx` | Wallet (Dynamic), approve, payout orchestration |
+| `src/lib/chains/arc.js` | viem clients, USDC payout txn, explorer URLs |
+| `src/lib/payouts.js` | Rails registry — `settlePayout({ rail: 'arc', ... })` |
+| `src/lib/dynamicWallet.jsx` | DynamicProvider (Arc network override) + re-exports |
 | `src/lib/store.js` | localStorage tasks/submissions/audit |
-| `src/pages/ReviewerPage.jsx` | Approve (off-chain) + Send ALGO (on-chain) |
-| `docs/COMPETITION.md` | Pitch script & slide outline |
-| `docs/X402_ROADMAP.md` | Phase 2 x402 integration plan |
+| `docs/ETHGLOBAL_NY_2026.md` | Bounty mapping, env vars, demo script |
 
-## Algorand dev portal AI
+## Env vars (.env.local)
 
-Use https://dev.algorand.co/ → grey **AI** button. Example:
-
-> Show me in AlgoKit Utils TypeScript how to do an asset opt-in transaction
+- `VITE_DYNAMIC_ENV_ID` — required; app.dynamic.xyz environment
+- `VITE_ARC_RPC_URL`, `VITE_ARC_CHAIN_ID`, `VITE_ARC_EXPLORER` — verify
+  against Circle's official Arc testnet docs before demoing
+- `VITE_REWARD_AMOUNT` — USDC base units, default 10000 = 0.01 USDC
 
 ## Constraints
 
-- **No smart contracts** required for competition demo
-- Default payout: **0.01 ALGO** (`VITE_REWARD_AMOUNT=10000`)
-- Split **approve** vs **pay** on Reviewer page (do not merge)
-- x402 npm integration is **Phase 2** until portal tutorial is on latest branch
+- **No smart contracts** required for the demo (native USDC transfers;
+  payout memo preserved in calldata for the audit trail)
+- Keep **approve** vs **pay** split on the Reviewer page (do not merge)
+- Default payout: **0.01 USDC** (`VITE_REWARD_AMOUNT=10000`, 6 decimals)
+- Amounts everywhere are USDC base units (6 decimals), not 18
 
 ## Before changing payout logic
 
-- Keep `signed[0]` from Pera `signTransaction` before `sendRawTransaction`
-- Use `response.txId ?? response.txid` after submit
-- Check ASA opt-in before ASA payouts
+- `settlePayout` validates the receiver per-rail — keep validation in the rail
+- Wait for 1 confirmation via `waitForTransactionReceipt` before marking paid
+- Dynamic wallets expose viem wallet clients via `primaryWallet.getWalletClient()`

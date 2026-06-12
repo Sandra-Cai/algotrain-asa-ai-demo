@@ -10,12 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@perawallet/connect": "^1.5.2",
-    "algosdk": "^3.5.2",
+    "@dynamic-labs/ethereum": "^4.88.5",
+    "@dynamic-labs/sdk-react-core": "^4.88.5",
     "buffer": "^6.0.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.2"
+    "react-router-dom": "^7.14.2",
+    "viem": "^2.52.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

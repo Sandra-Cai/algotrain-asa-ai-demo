@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useAlgoTrain } from '../context/AlgoTrainContext'
 import ExplorerLink from '../components/ExplorerLink'
-import { formatAddress } from '../lib/algorand'
+import { formatAddress } from '../lib/chains/arc'
 import { DEMO_TASK_ID, journeySteps } from '../lib/demoData'
 import { ALGORAND_RESOURCES } from '../lib/resources'
 
@@ -12,7 +12,6 @@ export default function HomePage() {
     status,
     tasks,
     submissions,
-    rewardAssetId,
     defaultRewardAmount,
     formatReward,
     auditLog,
@@ -36,14 +35,14 @@ export default function HomePage() {
   return (
     <section className="page-shell hero-section">
       <div className="hero-copy">
-        <p className="eyebrow">Algorand-native AI data infrastructure</p>
+        <p className="eyebrow">Stablecoin-native AI data infrastructure</p>
         <h2>
           Pay data contributors instantly with
           <span className="block">wallet-signed TestNet proof.</span>
         </h2>
         <p className="lead">
           Run the 90-second competition demo: submit data, approve quality, then
-          sign a live Algorand transaction judges can verify on Lora.
+          sign a live USDC transaction on Arc that judges can verify on the explorer.
         </p>
 
         <div className="hero-actions">
@@ -61,13 +60,13 @@ export default function HomePage() {
         <div className="signal-grid">
           <div>
             <p className="section-label">Network</p>
-            <p>Algorand {network}</p>
+            <p>Arc {network}</p>
           </div>
           <div>
             <p className="section-label">Wallet</p>
             <p>
               {activeAccount
-                ? `Pera · ${formatAddress(activeAccount)}`
+                ? `Dynamic · ${formatAddress(activeAccount)}`
                 : 'Not connected'}
             </p>
           </div>
@@ -75,8 +74,8 @@ export default function HomePage() {
             <p className="section-label">Demo reward</p>
             <p>
               {demoTask
-                ? formatReward(demoTask.rewardAmount, demoTask.rewardAssetId)
-                : formatReward(defaultRewardAmount, rewardAssetId)}
+                ? formatReward(demoTask.rewardAmount)
+                : formatReward(defaultRewardAmount)}
             </p>
           </div>
         </div>
@@ -106,7 +105,7 @@ export default function HomePage() {
         {latestTx && (
           <p className="proof-line">
             Latest proof:{' '}
-            <ExplorerLink txId={latestTx} label="Open on Lora ↗" />
+            <ExplorerLink txId={latestTx} label="Open on Arc explorer ↗" />
           </p>
         )}
       </aside>
@@ -128,10 +127,10 @@ export default function HomePage() {
       </div>
 
       <div className="vision-panel full-width card-panel">
-        <p className="eyebrow">Why Algorand · Why now</p>
+        <p className="eyebrow">Why Arc · Why now</p>
         <h3>Human payouts today. AI agent payments via x402 tomorrow.</h3>
         <p className="muted">
-          Algorand&apos;s instant finality and low fees make micro-rewards for
+          Arc settles in native USDC with deterministic finality, making dollar-denominated micro-rewards for
           labeling and verification economical. The same rails extend to
           autonomous agents paying per API call with HTTP 402.
         </p>

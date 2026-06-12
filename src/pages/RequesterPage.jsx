@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAlgoTrain } from '../context/AlgoTrainContext'
 import FlowSteps from '../components/FlowSteps'
-import { formatAddress } from '../lib/algorand'
+import { formatAddress } from '../lib/chains/arc'
 
 export default function RequesterPage() {
   const {
@@ -11,7 +11,6 @@ export default function RequesterPage() {
     createDataTask,
     tasks,
     formatReward,
-    rewardAssetId,
     defaultRewardAmount,
   } = useAlgoTrain()
 
@@ -45,7 +44,7 @@ export default function RequesterPage() {
 
       {!activeAccount && (
         <p className="callout callout-warn">
-          Connect Pera Wallet in the header to create tasks tied to your address.
+          Sign in with Dynamic in the header to create tasks tied to your address.
         </p>
       )}
 
@@ -73,7 +72,7 @@ export default function RequesterPage() {
         </div>
         <div className="form-field">
           <label htmlFor="task-reward">
-            Reward amount ({rewardAssetId ? 'ASA base units' : 'microAlgos'})
+            Reward amount (USDC base units · 6 decimals)
           </label>
           <input
             id="task-reward"
@@ -83,7 +82,7 @@ export default function RequesterPage() {
             onChange={(e) => setRewardAmount(e.target.value)}
           />
           <p className="field-hint">
-            Default demo: {formatReward(Number(rewardAmount), rewardAssetId)}
+            Default demo: {formatReward(Number(rewardAmount))}
           </p>
         </div>
         {error && <p className="form-error">{error}</p>}
@@ -106,7 +105,7 @@ export default function RequesterPage() {
               <h4>{task.title}</h4>
               <p className="muted">{task.description}</p>
               <p className="task-meta">
-                Reward: {formatReward(task.rewardAmount, task.rewardAssetId)} ·
+                Reward: {formatReward(task.rewardAmount)} ·
                 Requester:{' '}
                 {task.requesterAddress
                   ? formatAddress(task.requesterAddress)
