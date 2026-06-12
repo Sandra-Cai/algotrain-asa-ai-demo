@@ -4,6 +4,8 @@ import FlowSteps from '../components/FlowSteps'
 import ExplorerLink from '../components/ExplorerLink'
 import { formatAddress } from '../lib/chains/arc'
 import { DynamicWidget } from '../lib/dynamicWallet'
+import { VerifyHumanGate } from '../lib/worldId'
+import { worldConfigured } from '../lib/worldIdConfig'
 import { DEMO_TASK_ID, defaultSubmissionText } from '../lib/demoData'
 
 export default function ContributorPage() {
@@ -16,8 +18,14 @@ export default function ContributorPage() {
     payoutAddress,
     submitData,
     recordPayoutWallet,
+    recordHumanVerification,
+    verifiedHumans,
     formatReward,
   } = useAlgoTrain()
+
+  const isVerifiedHuman = Boolean(
+    verifiedHumans?.[payoutAddress] || verifiedHumans?.[activeAccount],
+  )
 
   const demoTask = tasks.find((t) => t.id === DEMO_TASK_ID) || tasks[0]
   const [taskId, setTaskId] = useState(
@@ -62,6 +70,38 @@ export default function ContributorPage() {
           real onchain wallet that receives your USDC rewards.
         </p>
         <DynamicWidget />
+        {worldConfigured && (
+          <div style={{ marginTop: '12px' }}>
+            {isVerifiedHuman ? (
+              <p className="badge">Verified human · World ID</p>
+            ) : (
+              <VerifyHumanGate
+                onVerified={(result) => {
+                  try {
+                    recordHumanVerification(result)
+                  } catch (err) {
+                    setError(err.message)
+                  }
+                }}
+              >
+                {(open) => (
+                  <button
+                    type="button"
+                    className="ghost-button"
+                    disabled={!activeAccount}
+                    onClick={open}
+                  >
+                    Verify I&apos;m human (World ID)
+                  </button>
+                )}
+              </VerifyHumanGate>
+            )}
+            <p className="muted" style={{ fontSize: '0.85rem', marginTop: '6px' }}>
+              One verification per human — keeps sybil accounts out of the
+              labeling pool and the dataset clean.
+            </p>
+          </div>
+        )}
       </div>
 
       {demoTask && (

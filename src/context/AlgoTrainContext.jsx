@@ -24,6 +24,7 @@ import {
   getStore,
   resetDemo,
   setPayoutAddress,
+  setVerifiedHuman,
   subscribe,
   updateSubmission,
 } from '../lib/store'
@@ -67,6 +68,19 @@ export function AlgoTrainProvider({ children }) {
     return buildArcWalletClient(provider, activeAccount)
   }, [walletReady, primaryWallet, activeAccount])
 
+  const recordHumanVerification = useCallback(
+    ({ nullifierHash }) => {
+      if (!activeAccount) throw new Error('Sign in first')
+      setVerifiedHuman(activeAccount, nullifierHash)
+      appendAudit(
+        'Human verified',
+        `World ID proof recorded for ${activeAccount.slice(0, 6)}…${activeAccount.slice(-4)}.`,
+      )
+      setStatus('Verified human — submissions will carry the badge')
+    },
+    [activeAccount],
+  )
+
   const recordPayoutWallet = useCallback(() => {
     if (!activeAccount) throw new Error('Sign in first — Dynamic creates your wallet')
     setPayoutAddress(activeAccount)
@@ -99,12 +113,17 @@ export function AlgoTrainProvider({ children }) {
       if (!contributorAddress) {
         throw new Error('Sign in and click “Use my wallet” first')
       }
-      const submission = addSubmission({ taskId, contributorAddress, content })
+      const submission = addSubmission({
+        taskId,
+        contributorAddress,
+        content,
+        verifiedHuman: Boolean(store.verifiedHumans?.[contributorAddress]),
+      })
       appendAudit('Data submitted', 'Work queued for reviewer approval.')
       setStatus('Submission saved — awaiting reviewer')
       return submission
     },
-    [activeAccount, store.payoutAddress],
+    [activeAccount, store.payoutAddress, store.verifiedHumans],
   )
 
   const approveSubmission = useCallback(
@@ -201,6 +220,7 @@ export function AlgoTrainProvider({ children }) {
       connect,
       disconnect,
       recordPayoutWallet,
+      recordHumanVerification,
       createDataTask,
       submitData,
       approveSubmission,
@@ -210,6 +230,7 @@ export function AlgoTrainProvider({ children }) {
       tasks: store.tasks,
       submissions: store.submissions,
       payoutAddress: store.payoutAddress,
+      verifiedHumans: store.verifiedHumans,
       auditLog: store.auditLog,
       defaultRewardAmount: DEFAULT_REWARD_AMOUNT,
       formatReward,
@@ -223,6 +244,7 @@ export function AlgoTrainProvider({ children }) {
       connect,
       disconnect,
       recordPayoutWallet,
+      recordHumanVerification,
       createDataTask,
       submitData,
       approveSubmission,
@@ -232,6 +254,7 @@ export function AlgoTrainProvider({ children }) {
       store.tasks,
       store.submissions,
       store.payoutAddress,
+      store.verifiedHumans,
       store.auditLog,
     ],
   )

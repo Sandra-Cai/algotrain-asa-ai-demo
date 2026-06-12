@@ -104,6 +104,9 @@ export default function ReviewerPage() {
               return (
                 <article key={s.id} className="card-panel task-card">
                   <h4>{task?.title || 'Unknown task'}</h4>
+                  {s.verifiedHuman && (
+                    <p className="badge">Verified human · World ID</p>
+                  )}
                   <p className="sample-box">{s.content}</p>
                   <p className="task-meta">
                     Contributor: {formatAddress(s.contributorAddress)} · Reward:{' '}

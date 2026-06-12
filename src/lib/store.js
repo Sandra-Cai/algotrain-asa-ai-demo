@@ -6,6 +6,7 @@ const defaultState = {
   tasks: [defaultDemoTask],
   submissions: [],
   payoutAddress: '',
+  verifiedHumans: {},
   auditLog: [
     {
       type: 'Demo ready',
@@ -24,6 +25,7 @@ function loadState() {
       tasks: parsed.tasks?.length ? parsed.tasks : defaultState.tasks,
       submissions: parsed.submissions ?? [],
       payoutAddress: parsed.payoutAddress ?? '',
+      verifiedHumans: parsed.verifiedHumans ?? {},
       auditLog: parsed.auditLog?.length ? parsed.auditLog : defaultState.auditLog,
     }
   } catch {
@@ -65,6 +67,14 @@ export function appendAudit(type, detail) {
 
 export function resetDemo() {
   state = structuredClone(defaultState)
+  emit()
+}
+
+export function setVerifiedHuman(address, nullifierHash) {
+  state = {
+    ...state,
+    verifiedHumans: { ...state.verifiedHumans, [address]: nullifierHash },
+  }
   emit()
 }
 

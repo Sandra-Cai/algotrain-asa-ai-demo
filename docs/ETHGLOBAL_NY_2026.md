@@ -21,6 +21,8 @@ VITE_ARC_CHAIN_ID=       # same source — DO NOT guess, verify before demo
 VITE_ARC_EXPLORER=       # Arc testnet explorer base URL
 VITE_ARC_PAYOUT_TOKEN=   # leave empty: native USDC payouts
 VITE_DYNAMIC_ENV_ID=     # from app.dynamic.xyz (add Arc as custom EVM network)
+VITE_WORLD_APP_ID=       # from developer.worldcoin.org (app_...)
+VITE_WORLD_ACTION=label-data  # incognito action name in the World dev portal
 ```
 
 ## Wiring (3 edits)
@@ -40,8 +42,9 @@ VITE_DYNAMIC_ENV_ID=     # from app.dynamic.xyz (add Arc as custom EVM network)
   memo preserved on-chain in calldata for the audit trail.
 - Dynamic ("upgrade an existing app's wallets"): embedded-wallet onboarding
   for non-crypto contributors; payout address sourced from Dynamic.
-- Optional ENS: resolve contributor ENS names as payout identities
-  (one `getEnsAddress` call in `arc.js` via a mainnet public client).
+- World (third SDK): World ID proof-of-personhood gate on the Contributor
+  page — sybil-resistant labeling pool, "verified human" badge flows through
+  to the Reviewer's approval view (`src/lib/worldId.jsx`).
 
 ## Demo script (90 seconds)
 

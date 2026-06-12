@@ -24,6 +24,7 @@ Open http://localhost:5173 — sign in via **Dynamic** (email or wallet).
 | `src/lib/chains/arc.js` | viem clients, USDC payout txn, explorer URLs |
 | `src/lib/payouts.js` | Rails registry — `settlePayout({ rail: 'arc', ... })` |
 | `src/lib/dynamicWallet.jsx` | DynamicProvider (Arc network override) + re-exports |
+| `src/lib/worldId.jsx` + `worldIdConfig.js` | World ID human-verification gate |
 | `src/lib/store.js` | localStorage tasks/submissions/audit |
 | `docs/ETHGLOBAL_NY_2026.md` | Bounty mapping, env vars, demo script |
 
@@ -33,6 +34,8 @@ Open http://localhost:5173 — sign in via **Dynamic** (email or wallet).
 - `VITE_ARC_RPC_URL`, `VITE_ARC_CHAIN_ID`, `VITE_ARC_EXPLORER` — verify
   against Circle's official Arc testnet docs before demoing
 - `VITE_REWARD_AMOUNT` — USDC base units, default 10000 = 0.01 USDC
+- `VITE_WORLD_APP_ID` / `VITE_WORLD_ACTION` — optional; World ID gate hides
+  itself if unset, so the core demo never depends on it
 
 ## Constraints
 
