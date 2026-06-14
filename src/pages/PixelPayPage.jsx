@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAccount } from '../lib/privyWallet'
 import { COPY, usd } from '../lib/copy'
-import { CONVERT_TARGETS, quoteConvert, executeConvert } from '../lib/convert'
+import { CONVERT_TARGETS, quoteConvert, buildConvertTx, executeConvert } from '../lib/convert'
 import { quoteCashOut, buildCashOut, executeCashOut } from '../lib/cashOut'
 import { useAlgoTrain } from '../context/AlgoTrainContext'
 
@@ -56,15 +56,21 @@ export default function PixelPayPage() {
   async function getWalletClient() {
     const provider = await getProvider()
     const { createWalletClient, custom } = await import('viem')
-    const { arcChain } = await import('../lib/chains/arc')
-    return createWalletClient({ account: address, chain: arcChain, transport: custom(provider) })
+    // Let the wallet's own connected network define the chain. The user is on
+    // the configured testnet (CHAIN_ID); we don't pin a hardcoded chain object
+    // so this works for Sepolia or whatever chain the API key is enabled for.
+    return createWalletClient({ account: address, transport: custom(provider) })
   }
 
-  async function handleQuoteConvert(toSymbol) {
+  async function handleQuoteConvert(target) {
     setBusy(true); setMsg('')
     try {
-      const q = await quoteConvert({ fromAmountUsd: balanceUnits, toSymbol, account: address })
-      setQuote({ kind: 'convert', toSymbol, ...q })
+      const q = await quoteConvert({
+        fromAmount: balanceUnits,
+        toAddress: target.address,
+        account: address,
+      })
+      setQuote({ kind: 'convert', toSymbol: target.symbol, ...q })
     } catch (err) {
       setMsg(err.message)
     } finally {
@@ -75,10 +81,13 @@ export default function PixelPayPage() {
   async function handleConfirmConvert() {
     setBusy(true); setMsg('')
     try {
+      // Step 2: build the unsigned tx from the quote.
+      const { transaction } = await buildConvertTx({ quote: quote.quote })
+      // Step 3: the user's wallet shows its own confirm prompt; they tap to
+      // approve. Nothing is sent without that explicit tap.
       const walletClient = await getWalletClient()
-      // User's wallet shows its own confirm prompt here; they tap to approve.
-      await executeConvert({ walletClient, request: quote.request })
-      setMsg(COPY.moveDone)
+      const hash = await executeConvert({ walletClient, transaction })
+      setMsg(`${COPY.moveDone}${hash ? ` · ${hash}` : ''}`)
       setQuote(null); setStage('home')
     } catch (err) {
       setMsg(err.message || 'Conversion not confirmed')
@@ -150,7 +159,7 @@ export default function PixelPayPage() {
                 <div className="inline-actions">
                   {CONVERT_TARGETS.map((t) => (
                     <button key={t.symbol} type="button" className="ghost-button" disabled={busy}
-                      onClick={() => handleQuoteConvert(t.symbol)}>
+                      onClick={() => handleQuoteConvert(t)}>
                       {t.label}
                     </button>
                   ))}
