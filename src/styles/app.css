@@ -938,3 +938,11 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/* PixelPay consumer surface — Cash-App-style, clean and friendly */
+.pixelpay .pp-hero h1 { font-size: 2.4rem; margin-bottom: 0.25rem; }
+.pp-balance { text-align: center; }
+.pp-balance-amount { font-size: 2.8rem; font-weight: 700; margin: 0.25rem 0; }
+.pp-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.pp-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; }
+.pp-quote { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.pp-signin { text-align: center; }

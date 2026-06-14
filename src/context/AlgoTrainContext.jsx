@@ -9,7 +9,7 @@ import {
 import {
   useDynamicContext,
   isEthereumWallet,
-} from '../lib/dynamicWallet'
+} from '../lib/privyWallet'
 import {
   buildArcWalletClient,
   formatReward,

@@ -6,12 +6,14 @@ import RequesterPage from './pages/RequesterPage'
 import ContributorPage from './pages/ContributorPage'
 import ReviewerPage from './pages/ReviewerPage'
 import AgentsPage from './pages/AgentsPage'
+import PixelPayPage from './pages/PixelPayPage'
 import { AlgoTrainProvider, useAlgoTrain } from './context/AlgoTrainContext'
 import { formatAddress } from './lib/chains/arc'
 import './styles/app.css'
 
 const navItems = [
   { to: '/', label: 'Overview' },
+  { to: '/pixelpay', label: 'PixelPay' },
   { to: '/requester', label: 'Requester' },
   { to: '/contributor', label: 'Contributor' },
   { to: '/reviewer', label: 'Reviewer' },
@@ -157,6 +159,7 @@ function AppShell() {
           <Route path="/contributor" element={<ContributorPage />} />
           <Route path="/reviewer" element={<ReviewerPage />} />
           <Route path="/agents" element={<AgentsPage />} />
+          <Route path="/pixelpay" element={<PixelPayPage />} />
         </Routes>
       </main>
 
